@@ -118,7 +118,6 @@ namespace hirzel::json
 
 		size_t length() const;
 		const auto& type() const { return _type; }
-		const char* typeName() const noexcept;
 
 		Value& operator=(Value&& other);
 		Value& operator=(const Value& other);

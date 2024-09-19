@@ -1,9 +1,11 @@
 #include "hirzel/json.hpp"
+#include "hirzel/json/Serialization.hpp"
 #include "hirzel/json/ValueType.hpp"
 #include "hirzel/json/Value.hpp"
 
 #include <cstdlib>
 #include <stdexcept>
+#include <string>
 
 namespace hirzel::json
 {
@@ -241,33 +243,6 @@ namespace hirzel::json
 		return *this;
 	}
 
-	const char* Value::typeName() const noexcept
-	{
-		switch (_type)
-		{
-		case ValueType::Null:
-			return "null";
-
-		case ValueType::Number:
-			return "number";
-
-		case ValueType::Boolean:
-			return "boolean";
-
-		case ValueType::String:
-			return "string";
-
-		case ValueType::Array:
-			return "array";
-
-		case ValueType::Object:
-			return "object";
-
-		default:
-			return "invalid-type";
-		}
-	}
-
 	Value *Value::at(const std::string& key)
 	{
 		if (_type != ValueType::Object)
@@ -432,12 +407,31 @@ namespace hirzel::json
 
 	std::string Value::asString() const
 	{
-		if (_type == ValueType::String)
-			return *_string;
+		switch (_type)
+		{
+			case ValueType::Null:
+				return "null";
 
-		// TODO: Implement better printing
+			case ValueType::Number:
+				return std::to_string(_number);
 
-		return serialize(*this);
+			case ValueType::Boolean:
+				return _boolean ? "true" : "false";
+
+			case ValueType::String:
+				return *_string;
+
+			case ValueType::Array:
+				return serializeArray(*this);
+
+			case ValueType::Object:
+				return serializeObject(*this);
+			
+			default:
+				break;
+		}
+
+		return "";
 	}
 
 	bool Value::isEmpty() const
