@@ -1,5 +1,4 @@
 #include "hirzel/json/Deserialization.hpp"
-#include "hirzel/json.hpp"
 #include "hirzel/json/Token.hpp"
 
 #include <stdexcept>
@@ -9,7 +8,7 @@
 
 namespace hirzel::json
 {
-	Value deserialize(const char* json)
+	std::optional<Value> deserialize(const char* json)
 	{
 		try
 		{
@@ -27,12 +26,12 @@ namespace hirzel::json
 		}
 	}
 
-	Value deserialize(const std::string& json)
+	std::optional<Value> deserialize(const std::string& json)
 	{
 		return deserialize(json.c_str());
 	}
 
-	Value deserializeValue(Token& token)
+	std::optional<Value> deserializeValue(Token& token)
 	{
 		switch (token.type())
 		{
@@ -63,9 +62,10 @@ namespace hirzel::json
 		}
 	}
 
-	Value deserializeObject(Token& token)
+	std::optional<Value> deserializeObject(Token& token)
 	{
-		assert(token.type() == TokenType::LeftBrace);
+		if (token.type() != TokenType::LeftBrace)
+			return {};
 
 		token.seekNext();
 
@@ -89,7 +89,10 @@ namespace hirzel::json
 
 				auto value = deserializeValue(token);
 
-				object.emplace(std::move(label), std::move(value));
+				if (!value)
+					return {};
+
+				object.emplace(std::move(label), *value);
 
 				if (token.type() == TokenType::Comma)
 				{
@@ -109,9 +112,11 @@ namespace hirzel::json
 		return object;
 	}
 
-	Value deserializeArray(Token& token)
+	std::optional<Value> deserializeArray(Token& token)
 	{
-		assert(token.type() == TokenType::LeftBracket);
+		if (token.type() != TokenType::LeftBracket)
+			return {};
+
 		token.seekNext();
 
 		auto arr = Array();
@@ -122,7 +127,10 @@ namespace hirzel::json
 			{
 				auto value = deserializeValue(token);
 
-				arr.emplace_back(std::move(value));
+				if (!value)
+					return {};
+
+				arr.emplace_back(*value);
 
 				if (token.type() == TokenType::Comma)
 				{
@@ -134,7 +142,7 @@ namespace hirzel::json
 			}
 
 			if (token.type() != TokenType::RightBracket)
-				throw std::runtime_error("Expected ']' before '" + token.text() + "'.");
+				return {};
 		}
 
 		token.seekNext();
@@ -142,9 +150,10 @@ namespace hirzel::json
 		return arr;
 	}
 
-	Value deserializeString(Token& token)
+	std::optional<Value> deserializeString(Token& token)
 	{
-		assert(token.type() == TokenType::String);
+		if (token.type() != TokenType::String)
+			return {};
 
 		auto text = std::string(token.src() + token.pos() + 1, token.length() - 2);
 		auto json = Value(std::move(text));
@@ -154,9 +163,10 @@ namespace hirzel::json
 		return json;
 	}
 
-	Value deserializeNumber(Token& token)
+	std::optional<Value> deserializeNumber(Token& token)
 	{
-		assert(token.type() == TokenType::Number);
+		if (token.type() != TokenType::Number)
+			return {};
 
 		auto text = token.text();
 		auto value = atof(text.c_str());
@@ -167,16 +177,18 @@ namespace hirzel::json
 		return json;
 	}
 
-	Value deserializeBoolean(Token& token)
+	std::optional<Value> deserializeBoolean(Token& token)
 	{
-		assert(token.type() == TokenType::True || token.type() == TokenType::False);
+		if (token.type() == TokenType::True)
+			return true;
 
-		auto value = token.type() == TokenType::True;
+		if (token.type() == TokenType::False)
+			return false;
 
-		return value;
+		return {};
 	}
 
-	Value deserializeNull(Token& token)
+	std::optional<Value> deserializeNull(Token& token)
 	{
 		assert(token.type() == TokenType::Null);
 

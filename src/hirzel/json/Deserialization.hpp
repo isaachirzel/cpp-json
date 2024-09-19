@@ -3,18 +3,19 @@
 
 #include "hirzel/json/Token.hpp"
 #include "hirzel/json/Value.hpp"
+#include <optional>
 
 namespace hirzel::json
 {
-	Value deserialize(const char *json);
-	Value deserialize(const std::string& json);
-	Value deserializeValue(Token& token);
-	Value deserializeObject(Token& token);
-	Value deserializeArray(Token& token);
-	Value deserializeString(Token& token);
-	Value deserializeNumber(Token& token);
-	Value deserializeBoolean(Token& token);
-	Value deserializeNull(Token& token);
+	std::optional<Value> deserialize(const char *json);
+	std::optional<Value> deserialize(const std::string& json);
+	std::optional<Value> deserializeValue(Token& token);
+	std::optional<Value> deserializeObject(Token& token);
+	std::optional<Value> deserializeArray(Token& token);
+	std::optional<Value> deserializeString(Token& token);
+	std::optional<Value> deserializeNumber(Token& token);
+	std::optional<Value> deserializeBoolean(Token& token);
+	std::optional<Value> deserializeNull(Token& token);
 }
 
 #endif

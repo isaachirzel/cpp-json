@@ -6,7 +6,8 @@ common_sources = [
 	'src/hirzel/json/Value.cpp',
 	'src/hirzel/json/ValueType.cpp',
 	'src/hirzel/json/Serialization.cpp',
-	'src/hirzel/json/Deserialization.cpp'
+	'src/hirzel/json/Deserialization.cpp',
+	'src/hirzel/json/Error.cpp'
 ]
 
 unit_test_sources = [

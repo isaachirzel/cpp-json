@@ -8,40 +8,31 @@ namespace hirzel::json
 		switch (value.type())
 		{
 			case ValueType::Null:
-				return serializeNull(value);
+				return *serializeNull(value);
 
 			case ValueType::Boolean:
-				return serializeBoolean(value);
+				return *serializeBoolean(value);
 
 			case ValueType::Number:
-				return serializeNumber(value);
+				return *serializeNumber(value);
 
 			case ValueType::String:
-				return serializeString(value);
+				return *serializeString(value);
 
 			case ValueType::Array:
-				return serializeArray(value);
+				return *serializeArray(value);
 
 			case ValueType::Object:
-				return serializeObject(value);
-
-			default:
-				break;
+				return *serializeObject(value);
 		}
-
-		abort();
 	}
 
-	std::string serializeObject(const Value& value)
+	std::optional<std::string> serializeObject(const Value& value)
 	{
-		assert(value.isObject());
+		if (!value.isObject())
+			return {};
 
 		const auto& object = value.object();
-
-		if (object.empty())
-		{
-			return "{}";
-		}
 
 		auto text = std::string();
 
@@ -74,16 +65,12 @@ namespace hirzel::json
 		return text;
 	}
 
-	std::string serializeArray(const Value& value)
+	std::optional<std::string> serializeArray(const Value& value)
 	{
-		assert(value.isArray());
+		if (!value.isArray())
+			return {};
 
 		const auto& array = value.array();
-
-		if (array.empty())
-		{
-			return "[]";
-		}
 
 		auto text = std::string();
 
@@ -112,8 +99,11 @@ namespace hirzel::json
 		return text;
 	}
 
-	std::string serializeString(const Value& value)
+	std::optional<std::string> serializeString(const Value& value)
 	{
+		if (!value.isString())
+			return {};
+
 		// TODO: Escaping text
 		auto text = std::string();
 		auto valueText = value.string();
@@ -127,9 +117,10 @@ namespace hirzel::json
 		return text;
 	}
 
-	std::string serializeNumber(const Value& value)
+	std::optional<std::string> serializeNumber(const Value& value)
 	{
-		assert(value.isNumber());
+		if (!value.isNumber())
+			return {};
 
 		auto number = value.number();
 		auto text = std::to_string(number);
@@ -137,9 +128,10 @@ namespace hirzel::json
 		return text;
 	}
 
-	std::string serializeBoolean(const Value& value)
+	std::optional<std::string> serializeBoolean(const Value& value)
 	{
-		assert(value.isBoolean());
+		if (!value.isBoolean())
+			return {};
 
 		const auto* text = value.boolean()
 			? "true"
@@ -148,9 +140,10 @@ namespace hirzel::json
 		return text;
 	}
 
-	std::string serializeNull(const Value& value)
+	std::optional<std::string> serializeNull(const Value& value)
 	{
-		assert(value.isNull());
+		if (!value.isNull())
+			return {};
 
 		return "null";
 	}

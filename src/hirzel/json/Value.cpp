@@ -407,31 +407,10 @@ namespace hirzel::json
 
 	std::string Value::asString() const
 	{
-		switch (_type)
-		{
-			case ValueType::Null:
-				return "null";
+		if (_type == ValueType::String)
+			return *_string;
 
-			case ValueType::Number:
-				return std::to_string(_number);
-
-			case ValueType::Boolean:
-				return _boolean ? "true" : "false";
-
-			case ValueType::String:
-				return *_string;
-
-			case ValueType::Array:
-				return serializeArray(*this);
-
-			case ValueType::Object:
-				return serializeObject(*this);
-			
-			default:
-				break;
-		}
-
-		return "";
+		return serialize(*this);
 	}
 
 	bool Value::isEmpty() const
