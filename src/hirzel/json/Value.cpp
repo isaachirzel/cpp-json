@@ -435,7 +435,9 @@ namespace hirzel::json
 		if (_type == ValueType::String)
 			return *_string;
 
-		return serialize(*this, false);
+		// TODO: Implement better printing
+
+		return serialize(*this);
 	}
 
 	bool Value::isEmpty() const
@@ -544,7 +546,9 @@ namespace hirzel::json
 
 	std::ostream& operator<<(std::ostream& out, const Value& json)
 	{
-		serialize(out, json, false);
+		auto text = json.asString();
+
+		out << text;
 
 		return out;
 	}

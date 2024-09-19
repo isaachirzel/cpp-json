@@ -7,8 +7,7 @@ namespace hirzel::json
 {
 	Value deserialize(const char* json);
 	Value deserialize(const std::string& json);
-	void serialize(std::ostream& out, const Value& json, bool minimized = false);
-	std::string serialize(const Value& json, bool minimized = false);
+	std::string serialize(const Value& value);
 }
 
 #endif

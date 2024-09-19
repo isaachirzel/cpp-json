@@ -1,11 +1,12 @@
 project('cpp-json', 'cpp')
 
 common_sources = [
-	'src/hirzel/json.cpp',
 	'src/hirzel/json/Token.cpp',
 	'src/hirzel/json/TokenType.cpp',
 	'src/hirzel/json/Value.cpp',
-	'src/hirzel/json/ValueType.cpp'
+	'src/hirzel/json/ValueType.cpp',
+	'src/hirzel/json/Serialization.cpp',
+	'src/hirzel/json/Deserialization.cpp'
 ]
 
 unit_test_sources = [
