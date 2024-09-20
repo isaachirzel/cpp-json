@@ -1,8 +1,25 @@
 #include "hirzel/json/Serialization.hpp"
+#include "hirzel/json/Error.hpp"
+
 #include <string>
 
 namespace hirzel::json
 {
+	static void serializationError(const Value& value, ValueType expectedType)
+	{
+		if (!hasErrorCallback())
+			return;
+
+		auto message = std::string();
+
+		message += "Unable to serialize ";
+		message += valueTypeName(value.type());
+		message += " '' as ";
+		message += valueTypeName(expectedType);
+
+		error(message);
+	}
+
 	std::string serialize(const Value& value)
 	{
 		switch (value.type())
@@ -10,11 +27,11 @@ namespace hirzel::json
 			case ValueType::Null:
 				return *serializeNull(value);
 
-			case ValueType::Boolean:
-				return *serializeBoolean(value);
-
 			case ValueType::Number:
 				return *serializeNumber(value);
+
+			case ValueType::Boolean:
+				return *serializeBoolean(value);
 
 			case ValueType::String:
 				return *serializeString(value);
@@ -24,13 +41,21 @@ namespace hirzel::json
 
 			case ValueType::Object:
 				return *serializeObject(value);
+			
+			default:
+				break;
 		}
+
+		return "";
 	}
 
 	std::optional<std::string> serializeObject(const Value& value)
 	{
 		if (!value.isObject())
+		{
+			serializationError(value, ValueType::Object);
 			return {};
+		}
 
 		const auto& object = value.object();
 
@@ -68,27 +93,24 @@ namespace hirzel::json
 	std::optional<std::string> serializeArray(const Value& value)
 	{
 		if (!value.isArray())
+		{
+			serializationError(value, ValueType::Array);
 			return {};
+		}
 
 		const auto& array = value.array();
-
 		auto text = std::string();
 
 		text += '[';
 
-		auto isFirst = true;
-
-		for (const auto& item : array)
+		for (size_t i = 0; i < array.size(); ++i)
 		{
-			if (isFirst)
-			{
-				isFirst = false;
-			}
-			else
+			if (i > 0)
 			{
 				text += ',';
 			}
 
+			const auto& item = array[i];
 			auto itemText = serialize(item);
 
 			text += itemText;
@@ -102,7 +124,10 @@ namespace hirzel::json
 	std::optional<std::string> serializeString(const Value& value)
 	{
 		if (!value.isString())
+		{
+			serializationError(value, ValueType::String);
 			return {};
+		}
 
 		// TODO: Escaping text
 		auto text = std::string();
@@ -120,7 +145,10 @@ namespace hirzel::json
 	std::optional<std::string> serializeNumber(const Value& value)
 	{
 		if (!value.isNumber())
+		{
+			serializationError(value, ValueType::Number);
 			return {};
+		}
 
 		auto number = value.number();
 		auto text = std::to_string(number);
@@ -131,7 +159,10 @@ namespace hirzel::json
 	std::optional<std::string> serializeBoolean(const Value& value)
 	{
 		if (!value.isBoolean())
+		{
+			serializationError(value, ValueType::Boolean);
 			return {};
+		}
 
 		const auto* text = value.boolean()
 			? "true"
@@ -143,7 +174,10 @@ namespace hirzel::json
 	std::optional<std::string> serializeNull(const Value& value)
 	{
 		if (!value.isNull())
+		{
+			serializationError(value, ValueType::Null);
 			return {};
+		}
 
 		return "null";
 	}
