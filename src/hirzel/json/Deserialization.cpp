@@ -1,7 +1,6 @@
 #include "hirzel/json/Deserialization.hpp"
 #include "hirzel/json/Error.hpp"
 #include "hirzel/json/Token.hpp"
-#include "hirzel/json/ValueType.hpp"
 
 #include <utility>
 #include <cassert>
@@ -9,6 +8,18 @@
 
 namespace hirzel::json
 {
+	static bool incrementToken(Token& token)
+	{
+		auto nextToken = token.parseNext();
+
+		if (!nextToken)
+			return false;
+
+		token = *nextToken;
+
+		return true;
+	}
+
 	static void expectedError(const Token& token, const char *expected)
 	{
 		if (!hasErrorCallback())
@@ -22,20 +33,24 @@ namespace hirzel::json
 		message += token.text();
 		message += "'.";
 
-		error(message);
+		pushError(message);
 	}
 
 	std::optional<Value> deserialize(const char* json)
 	{
-		auto token = Token::initialFor(json);
-		auto out = deserializeValue(token);
+		auto token = Token::parse(json);
+
+		if (!token)
+			return {};
+
+		auto out = deserializeValue(*token);
 
 		if (!out)
 			return {};
 
-		if (token.type() != TokenType::EndOfFile)
+		if (token->type() != TokenType::EndOfFile)
 		{
-			expectedError(token, "end of file");
+			expectedError(*token, "end of file");
 			return {};
 		}
 
@@ -87,7 +102,8 @@ namespace hirzel::json
 			return {};
 		}
 
-		token.seekNext();
+		if (!incrementToken(token))
+			return {};
 
 		auto object = Object();
 
@@ -101,9 +117,10 @@ namespace hirzel::json
 					return {};
 				}
 
-				auto label = std::string(token.src() + token.pos() + 1, token.length() - 2);
+				auto label = std::string(token.src() + token.index() + 1, token.length() - 2);
 
-				token.seekNext();
+				if (!incrementToken(token))
+					return {};
 
 				if (token.type() != TokenType::Colon)
 				{
@@ -111,7 +128,8 @@ namespace hirzel::json
 					return {};
 				}
 
-				token.seekNext();
+				if (!incrementToken(token))
+					return {};
 
 				auto value = deserializeValue(token);
 
@@ -122,7 +140,9 @@ namespace hirzel::json
 
 				if (token.type() == TokenType::Comma)
 				{
-					token.seekNext();
+					if (!incrementToken(token))
+						return {};
+
 					continue;
 				}
 
@@ -136,7 +156,8 @@ namespace hirzel::json
 			}
 		}
 
-		token.seekNext();
+		if (!incrementToken(token))
+			return {};
 
 		return object;
 	}
@@ -149,7 +170,8 @@ namespace hirzel::json
 			return {};
 		}
 
-		token.seekNext();
+		if (!incrementToken(token))
+			return {};
 
 		auto arr = Array();
 
@@ -166,7 +188,9 @@ namespace hirzel::json
 
 				if (token.type() == TokenType::Comma)
 				{
-					token.seekNext();
+					if (!incrementToken(token))
+						return {};
+
 					continue;
 				}
 
@@ -180,7 +204,8 @@ namespace hirzel::json
 			}
 		}
 
-		token.seekNext();
+		if (!incrementToken(token))
+			return {};
 
 		return arr;
 	}
@@ -193,10 +218,11 @@ namespace hirzel::json
 			return {};
 		}
 
-		auto text = std::string(token.src() + token.pos() + 1, token.length() - 2);
+		auto text = std::string(token.src() + token.index() + 1, token.length() - 2);
 		auto json = Value(std::move(text));
 
-		token.seekNext();
+		if (!incrementToken(token))
+			return {};
 
 		return json;
 	}
@@ -213,7 +239,8 @@ namespace hirzel::json
 		auto value = atof(text.c_str());
 		auto json = Value(value);
 
-		token.seekNext();
+		if (!incrementToken(token))
+			return {};
 
 		return json;
 	}

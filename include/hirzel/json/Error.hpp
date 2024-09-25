@@ -5,6 +5,6 @@ namespace hirzel::json
 {
 	bool hasErrorCallback();
 	void onError(std::function<void(const char*)>&& callback);
-	void error(const std::string& message);
-	void error(const char* message);
+	void pushError(const std::string& message);
+	void pushError(const char* message);
 }

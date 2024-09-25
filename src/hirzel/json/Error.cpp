@@ -14,12 +14,12 @@ namespace hirzel::json
 		_callback = std::move(callback);
 	}
 
-	void error(const std::string& message)
+	void pushError(const std::string& message)
 	{
 		_callback(message.c_str());
 	}
 
-	void error(const char *message)
+	void pushError(const char *message)
 	{
 		_callback(message);
 	}

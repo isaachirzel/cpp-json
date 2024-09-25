@@ -17,7 +17,7 @@ namespace hirzel::json
 		message += " '' as ";
 		message += valueTypeName(expectedType);
 
-		error(message);
+		pushError(message);
 	}
 
 	std::string serialize(const Value& value)
