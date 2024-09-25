@@ -5,7 +5,7 @@
 
 namespace hirzel::json
 {
-	enum class TokenType
+	enum class TokenType: unsigned char
 	{
 		LeftBrace,
 		RightBrace,
@@ -21,6 +21,7 @@ namespace hirzel::json
 		EndOfFile
 	};
 
+	const char* tokenTypeName(TokenType tokenType);
 	std::ostream& operator<<(std::ostream& out, TokenType tokenType);
 }
 

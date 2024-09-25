@@ -95,7 +95,64 @@ namespace hirzel::json
 			+ ".");
 	}
 
-	static Token parseStringToken(const char* src, const size_t startPos)
+	Token Token::parse(const char* src, size_t pos)
+	{
+		auto c = src[pos];
+
+		switch (c)
+		{
+		case '\0':
+			return Token(src, pos, 1, TokenType::EndOfFile);
+
+		case '{':
+			return Token(src, pos, 1, TokenType::LeftBrace);
+
+		case '}':
+			return Token(src, pos, 1, TokenType::RightBrace);
+
+		case '[':
+			return Token(src, pos, 1, TokenType::LeftBracket);
+
+		case ']':
+			return Token(src, pos, 1, TokenType::RightBracket);
+
+		case ',':
+			return Token(src, pos, 1, TokenType::Comma);
+
+		case ':':
+			return Token(src, pos, 1, TokenType::Colon);
+
+		case '\"':
+			return Token::parseString(src, pos);
+
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case '-':
+			return Token::parseNumber(src, pos);
+
+		case 't':
+			return Token::parseTrue(src, pos);
+
+		case 'f':
+			return Token::parseFalse(src, pos);
+
+		case 'n':
+			return Token::parseNull(src, pos);
+
+		default:
+			throw std::runtime_error(std::string("Unexpected token '") + src[pos] + "' at pos: " + std::to_string(pos));
+		}
+	}
+
+	Token Token::parseString(const char* src, const size_t startPos)
 	{
 		assert(src[startPos] == '\"');
 
@@ -127,7 +184,7 @@ namespace hirzel::json
 		return iter - src;
 	}
 
-	static Token parseNumberToken(const char* src, const size_t start)
+	Token Token::parseNumber(const char* src, const size_t start)
 	{
 		assert(isdigit(src[start]) || src[start] == '-');
 
@@ -187,7 +244,7 @@ namespace hirzel::json
 		return token;
 	}
 
-	static Token parseTrueToken(const char* src, size_t pos)
+	Token Token::parseTrue(const char* src, size_t pos)
 	{
 		assert(src[pos] == 't');
 
@@ -197,7 +254,7 @@ namespace hirzel::json
 		throw unexpectedToken(src, pos);
 	}
 
-	static Token parseFalseToken(const char* src, size_t pos)
+	Token Token::parseFalse(const char* src, size_t pos)
 	{
 		assert(src[pos] == 'f');
 
@@ -207,7 +264,7 @@ namespace hirzel::json
 		throw unexpectedToken(src, pos);
 	}
 
-	static Token parseNullToken(const char* src, size_t pos)
+	Token Token::parseNull(const char* src, size_t pos)
 	{
 		assert(src[pos] == 'n');
 
@@ -217,67 +274,10 @@ namespace hirzel::json
 		throw unexpectedToken(src, pos);
 	}
 
-	static Token parseToken(const char* src, size_t pos)
-	{
-		auto c = src[pos];
-
-		switch (c)
-		{
-		case '\0':
-			return Token(src, pos, 1, TokenType::EndOfFile);
-
-		case '{':
-			return Token(src, pos, 1, TokenType::LeftBrace);
-
-		case '}':
-			return Token(src, pos, 1, TokenType::RightBrace);
-
-		case '[':
-			return Token(src, pos, 1, TokenType::LeftBracket);
-
-		case ']':
-			return Token(src, pos, 1, TokenType::RightBracket);
-
-		case ',':
-			return Token(src, pos, 1, TokenType::Comma);
-
-		case ':':
-			return Token(src, pos, 1, TokenType::Colon);
-
-		case '\"':
-			return parseStringToken(src, pos);
-
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-		case '-':
-			return parseNumberToken(src, pos);
-
-		case 't':
-			return parseTrueToken(src, pos);
-
-		case 'f':
-			return parseFalseToken(src, pos);
-
-		case 'n':
-			return parseNullToken(src, pos);
-
-		default:
-			throw std::runtime_error(std::string("Unexpected token '") + src[pos] + "' at pos: " + std::to_string(pos));
-		}
-	}
-
 	Token Token::initialFor(const char* src)
 	{
 		auto pos = nextTokenPos(src, 0);
-		auto token = parseToken(src, pos);
+		auto token = parse(src, pos);
 
 		return token;
 	}
@@ -285,7 +285,7 @@ namespace hirzel::json
 	void Token::seekNext()
 	{
 		auto pos = nextTokenPos(_src, _pos + _length);
-		auto token = parseToken(_src, pos);
+		auto token = parse(_src, pos);
 
 		new(this) auto(std::move(token));
 	}

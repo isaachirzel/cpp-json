@@ -28,7 +28,7 @@ namespace hirzel::json
 				break;
 		}
 
-		return "invalid-type";
+		return "invalid value";
 	}
 
 	std::ostream& operator<<(std::ostream& out, ValueType valueType)

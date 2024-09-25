@@ -1,29 +1,45 @@
 #include "hirzel/json/Deserialization.hpp"
+#include "hirzel/json/Error.hpp"
 #include "hirzel/json/Token.hpp"
+#include "hirzel/json/ValueType.hpp"
 
-#include <stdexcept>
 #include <utility>
 #include <cassert>
 #include <cstdlib>
 
 namespace hirzel::json
 {
+	static void expectedError(const Token& token, const char *expected)
+	{
+		if (!hasErrorCallback())
+			return;
+
+		auto message = std::string();
+
+		message += "Unable to deserialize value: Expected ";
+		message += expected;
+		message += ", but got '";
+		message += token.text();
+		message += "'.";
+
+		error(message);
+	}
+
 	std::optional<Value> deserialize(const char* json)
 	{
-		try
-		{
-			auto token = Token::initialFor(json);
-			auto out = deserializeValue(token);
+		auto token = Token::initialFor(json);
+		auto out = deserializeValue(token);
 
-			if (token.type() != TokenType::EndOfFile)
-				throw std::runtime_error("Unexpected token: " + token.text());
+		if (!out)
+			return {};
 
-			return out;
-		}
-		catch (const std::exception& e)
+		if (token.type() != TokenType::EndOfFile)
 		{
-			throw std::runtime_error("Failed to deserialize JSON: " + std::string(e.what()));
+			expectedError(token, "end of file");
+			return {};
 		}
+
+		return out;
 	}
 
 	std::optional<Value> deserialize(const std::string& json)
@@ -54,18 +70,22 @@ namespace hirzel::json
 			case TokenType::Null:
 				return deserializeNull(token);
 
-			case TokenType::EndOfFile:
-				throw std::runtime_error("Unexpected end of file.");
-
 			default:
-				throw std::runtime_error("Unexpected token: '" + token.text() + "'.");
+				break;
 		}
+
+		expectedError(token, "object, array, string, number, boolean, or null");
+
+		return {};
 	}
 
 	std::optional<Value> deserializeObject(Token& token)
 	{
 		if (token.type() != TokenType::LeftBrace)
+		{
+			expectedError(token, "'{'");
 			return {};
+		}
 
 		token.seekNext();
 
@@ -76,14 +96,20 @@ namespace hirzel::json
 			while (true)
 			{
 				if (token.type() != TokenType::String)
-					throw std::runtime_error("Expected label, got '" + token.text() + "'.");
+				{
+					expectedError(token, "label");
+					return {};
+				}
 
 				auto label = std::string(token.src() + token.pos() + 1, token.length() - 2);
 
 				token.seekNext();
 
 				if (token.type() != TokenType::Colon)
-					throw std::runtime_error("Expected ':' before '" + token.text() + "'.");
+				{
+					expectedError(token, "':'");
+					return {};
+				}
 
 				token.seekNext();
 
@@ -104,7 +130,10 @@ namespace hirzel::json
 			}
 
 			if (token.type() != TokenType::RightBrace)
-				throw std::runtime_error("Expected '}' before '" + token.text() + "'.");
+			{
+				expectedError(token, "'}'");
+				return {};
+			}
 		}
 
 		token.seekNext();
@@ -115,7 +144,10 @@ namespace hirzel::json
 	std::optional<Value> deserializeArray(Token& token)
 	{
 		if (token.type() != TokenType::LeftBracket)
+		{
+			expectedError(token, "'['");
 			return {};
+		}
 
 		token.seekNext();
 
@@ -142,7 +174,10 @@ namespace hirzel::json
 			}
 
 			if (token.type() != TokenType::RightBracket)
+			{
+				expectedError(token, "']'");
 				return {};
+			}
 		}
 
 		token.seekNext();
@@ -153,7 +188,10 @@ namespace hirzel::json
 	std::optional<Value> deserializeString(Token& token)
 	{
 		if (token.type() != TokenType::String)
+		{
+			expectedError(token, "string");
 			return {};
+		}
 
 		auto text = std::string(token.src() + token.pos() + 1, token.length() - 2);
 		auto json = Value(std::move(text));
@@ -166,7 +204,10 @@ namespace hirzel::json
 	std::optional<Value> deserializeNumber(Token& token)
 	{
 		if (token.type() != TokenType::Number)
+		{
+			expectedError(token, "number");
 			return {};
+		}
 
 		auto text = token.text();
 		auto value = atof(text.c_str());
@@ -185,13 +226,18 @@ namespace hirzel::json
 		if (token.type() == TokenType::False)
 			return false;
 
+		expectedError(token, "boolean");
 		return {};
 	}
 
 	std::optional<Value> deserializeNull(Token& token)
 	{
-		assert(token.type() == TokenType::Null);
+		if (token.type() != TokenType::Null)
+		{
+			expectedError(token, "null");
+			return {};
+		}
 
-		return {};
+		return Value();
 	}
 }

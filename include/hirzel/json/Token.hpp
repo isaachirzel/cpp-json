@@ -14,9 +14,19 @@ namespace hirzel::json
 		size_t _length;
 		TokenType _type;
 
-	public:
+	private:
 
 		Token(const char* src, size_t pos, size_t length, TokenType type);
+
+		static Token parse(const char *src, size_t pos);
+		static Token parseString(const char *src, size_t pos);
+		static Token parseNumber(const char *src, size_t pos);
+		static Token parseTrue(const char *src, size_t pos);
+		static Token parseFalse(const char *src, size_t pos);
+		static Token parseNull(const char *src, size_t pos);
+
+	public:
+
 		Token(Token&&) = default;
 		Token(const Token&) = default;
 

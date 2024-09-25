@@ -1,7 +1,8 @@
-#ifndef HIRZEL_JSON_SERIALIZER_HPP
-#define HIRZEL_JSON_SERIALIZER_HPP
+#ifndef HIRZEL_JSON_SERIALIZATION_HPP
+#define HIRZEL_JSON_SERIALIZATION_HPP
 
 #include "hirzel/json/Value.hpp"
+
 #include <optional>
 
 namespace hirzel::json
