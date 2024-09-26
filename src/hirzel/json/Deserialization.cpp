@@ -3,7 +3,6 @@
 #include "hirzel/json/Token.hpp"
 
 #include <utility>
-#include <cassert>
 #include <cstdlib>
 
 namespace hirzel::json

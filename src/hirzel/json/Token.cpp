@@ -4,8 +4,6 @@
 
 #include <cstring>
 #include <string>
-#include <stdexcept>
-#include <cassert>
 #include <cctype>
 
 namespace hirzel::json
@@ -23,21 +21,6 @@ namespace hirzel::json
 		error += std::to_string(index);
 		error += ": ";
 		error += message;
-
-		pushError(error);
-	}
-
-	static void invalidTokenError(const char *src, size_t index, size_t length)
-	{
-		if (!hasErrorCallback())
-			return;
-
-		auto error = std::string();
-
-		error += "Invalid token '";
-		error.append(&src[index], length);
-		error += "' at index: ";
-		error += std::to_string(index);
 
 		pushError(error);
 	}
@@ -216,8 +199,6 @@ namespace hirzel::json
 
 	std::optional<Token> Token::parseNumber(const char* src, const size_t start)
 	{
-		assert(isdigit(src[start]) || src[start] == '-');
-
 		auto i = start;
 
 		if (src[i] == '-')
