@@ -2,6 +2,7 @@
 #include "hirzel/json/ValueType.hpp"
 #include "hirzel/json/Value.hpp"
 
+#include <cassert>
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
@@ -278,58 +279,36 @@ namespace hirzel::json
 
 	const Value *Value::at(size_t i) const
 	{
-		if (_type != ValueType::Array || i >= _array->size())
-			return nullptr;
-
-		return &(*_array)[i];
+		return const_cast<Value&>(*this).at(i);
 	}
 
 	Value& Value::operator[](size_t i)
 	{
-		if (_type != ValueType::Array)
-			throw std::runtime_error("Value is not an array.");
-
-		if (i >= _array->size())
-			throw std::runtime_error("Index " + std::to_string(i) + " is out of bounds.");
+		assert(_type == ValueType::Array);
+		assert(i < _array->size());
 
 		return (*_array)[i];
 	}
 
 	const Value& Value::operator[](size_t i) const
 	{
-		if (_type != ValueType::Array)
-			throw std::runtime_error("Value is not an array.");
-
-		if (i >= _array->size())
-			throw std::runtime_error("Index " + std::to_string(i) + " is out of bounds.");
-
-		return (*_array)[i];
+		return const_cast<Value&>(*this)[i];
 	}
 
 	Value& Value::operator[](const std::string& key)
 	{
-		if (_type != ValueType::Object)
-			throw std::runtime_error("Value is not an object.");
-
+		assert(_type == ValueType::Object);
+		
 		auto iter = _object->find(key);
 
-		if (iter == _object->end())
-			throw std::runtime_error("No member with key '" + key + "' exists.");
+		assert(iter != _object->end());
 
 		return iter->second;
 	}
 
 	const Value& Value::operator[](const std::string& key) const
 	{
-		if (_type != ValueType::Object)
-			throw std::runtime_error("Value is not an object.");
-
-		auto iter = _object->find(key);
-
-		if (iter == _object->end())
-			throw std::runtime_error("No member with key '" + key + "' exists.");
-
-		return iter->second;
+		return const_cast<Value&>(*this)[key];
 	}
 
 	int64_t Value::asInteger() const
