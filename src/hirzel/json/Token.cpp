@@ -98,7 +98,7 @@ namespace hirzel::json
 		return i;
 	}
 
-	std::optional<Token> Token::parse(const char* src, size_t index)
+	std::optional<Token> Token::parse(const char* src, const size_t index)
 	{
 		auto c = src[index];
 
@@ -269,14 +269,14 @@ namespace hirzel::json
 
 	static bool parseKeyword(const char* src, const size_t startIndex, const char* keyword, const size_t keywordLength)
 	{
-		auto index = startIndex;
+		auto endIndex = startIndex;
 
-		while (isalpha(src[index]))
-			index += 1;
+		while (isalpha(src[endIndex]))
+			endIndex += 1;
 
-		const auto length = index - startIndex;
+		const auto length = endIndex - startIndex;
 
-		if (length > keywordLength || strcmp(keyword, &src[startIndex]))
+		if (length != keywordLength || strncmp(keyword, &src[startIndex], keywordLength))
 		{
 			parseError(keyword, startIndex, "Invalid keyword.");
 			return false;

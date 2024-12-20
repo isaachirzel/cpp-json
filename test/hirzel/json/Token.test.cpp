@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstring>
 #include <iostream>
+#include <vector>
 
 // const char *testSrc1 = R"%(
 // 	{}
@@ -74,6 +75,39 @@ bool confirmStandaloneToken(const char *src, TokenType tokenType)
 	return true;
 }
 
+bool confirmText(const char* src, const std::vector<TokenType>& types)
+{
+	auto token = Token::parse(src);
+	size_t i = 0;
+	auto success = true;
+
+	for (const auto& type : types)
+	{
+		if (!token)
+		{
+			std::cerr << "token " << i << " failed to parse\n";
+			success = false;
+		}
+
+		if (token->type() != type)
+		{
+			std::cerr << "Token " << i << " is not correct type\n";
+			success = false;
+		}
+
+		token = token->parseNext();
+		i += 1;
+	}
+
+	if (token->type() != TokenType::EndOfFile)
+	{
+		std::cerr << "Expected end of file, got " << token->type() << "\n";
+		success = false;
+	}
+
+	return success;
+}
+
 void testString()
 {
 	assert(confirmStandaloneToken("\"hello\"", TokenType::String));
@@ -82,6 +116,7 @@ void testString()
 void testNumber()
 {
 	assert(confirmStandaloneToken("123", TokenType::Number));
+	assert(confirmStandaloneToken("123.456", TokenType::Number));
 }
 
 void testTrue()
@@ -134,6 +169,59 @@ void testRightBrace()
 	assert(confirmStandaloneToken("}", TokenType::RightBrace));
 }
 
+void testText()
+{
+	assert(confirmText(R"(
+		[ 123, "hello", false, true, null ]
+	)",
+	{
+		TokenType::LeftBracket,
+		TokenType::Number,
+		TokenType::Comma,
+		TokenType::String,
+		TokenType::Comma,
+		TokenType::False,
+		TokenType::Comma,
+		TokenType::True,
+		TokenType::Comma,
+		TokenType::Null,
+		TokenType::RightBracket
+	}));
+
+	assert(confirmText(R"(
+		{
+			"a": 123.456,
+			"b": null,
+			"c": false,
+			"d": true,
+			"e": "text"
+		}
+	)",
+	{
+		TokenType::LeftBrace,
+		TokenType::String,
+		TokenType::Colon,
+		TokenType::Number,
+		TokenType::Comma,
+		TokenType::String,
+		TokenType::Colon,
+		TokenType::Null,
+		TokenType::Comma,
+		TokenType::String,
+		TokenType::Colon,
+		TokenType::False,
+		TokenType::Comma,
+		TokenType::String,
+		TokenType::Colon,
+		TokenType::True,
+		TokenType::Comma,
+		TokenType::String,
+		TokenType::Colon,
+		TokenType::String,
+		TokenType::RightBrace
+	}));
+}
+
 int main()
 {
 	testString();
@@ -148,6 +236,7 @@ int main()
 	testRightBracket();
 	testLeftBrace();
 	testRightBrace();
+	testText();
 
 	return 0;
 }
