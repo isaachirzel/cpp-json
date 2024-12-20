@@ -1,4 +1,5 @@
 #include "hirzel/json/Token.hpp"
+#include "hirzel/json/TokenType.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -10,117 +11,143 @@
 
 using namespace hirzel::json;
 
-void confirmEndOfFile(const Token& token)
+bool confirmToken(const std::optional<Token>& token, TokenType tokenType, const char* text, const char *src, size_t index, size_t length)
+{
+	if (!token)
+	{
+		std::cerr << "token result is not valid\n";
+		return false;
+	}
+
+	auto success = true;
+
+	if (token->type() != tokenType)
+	{
+		std::cerr << "Incorrect token type\n";
+		success = false;
+	}
+
+	if (token->text() != text)
+	{
+		std::cerr << "Incorrect token text\n";
+		success = false;
+	}
+
+	if (token->src() != src)
+	{
+		std::cerr << "Incorrect src\n";
+		success = false;
+	}
+
+	if (token->index() != index)
+	{
+		std::cerr << "Incorrect index";
+		success = false;
+	}
+
+	if (token->length() != length)
+	{
+		std::cerr << "Incorrect length\n";
+		success = false;
+	}
+
+	return success;
+}
+
+bool confirmEndOfFile(const Token& token)
 {
 	auto next = token.parseNext();
 	
-	assert(next);
-	assert(next->type() == TokenType::EndOfFile);
-	assert(next->text() == "");
-	assert(next->src() == token.src());
-	assert(next->length() == 0);
-	assert(next->index() == strlen(token.src()));
+	return confirmToken(next, TokenType::EndOfFile, "", token.src(), strlen(token.src()), 0);
 }
 
-void testString1()
+bool confirmStandaloneToken(const char *src, TokenType tokenType)
 {
-	const auto* src = "\"hello\"";
-	auto result = Token::parse(src);
-
-	assert(result);
-
-	auto token = *result;
-
-	assert(token.text() == src);
-	assert(token.src() == src);
-	assert(token.index() == 0);
-	assert(token.length() == strlen(src));
-	assert(token.type() == TokenType::String);
-
-	confirmEndOfFile(token);
-}
-
-void testNumber1()
-{
-	const auto* src = "123";
-	auto result = Token::parse(src);
-
-	assert(result);
-
-	auto token = *result;
-
-	assert(token.text() == src);
-	assert(token.src() == src);
-	assert(token.index() == 0);
-	assert(token.length() == strlen(src));
-	assert(token.type() == TokenType::Number);
-	
-	confirmEndOfFile(token);
-}
-
-void testTrue1()
-{
-	const auto* src = "true";
-
 	auto token = Token::parse(src);
 
-	assert(token);
-	assert(token->src() == src);
-	assert(token->index() == 0);
-	assert(token->length() == 4);
-	assert(token->type() == TokenType::True);
+	if (!confirmToken(token, tokenType, src, src, 0, strlen(src)))
+		return false;
+
+	if (!confirmEndOfFile(*token))
+		return false;
+
+	return true;
 }
 
-void testFalse1()
+void testString()
 {
-	const auto* src = "false";
-
-	auto token = Token::parse(src);
-
-	assert(token);
-	assert(token->src() == src);
-	assert(token->index() == 0);
-	assert(token->length() == 5);
-	assert(token->type() == TokenType::False);
+	assert(confirmStandaloneToken("\"hello\"", TokenType::String));
 }
 
-void testNull1()
+void testNumber()
 {
-	const auto* src = "null";
-
-	auto token = Token::parse(src);
-
-	assert(token);
-	assert(token->src() == src);
-	assert(token->index() == 0);
-	assert(token->length() == 4);
-	assert(token->type() == TokenType::Null);
+	assert(confirmStandaloneToken("123", TokenType::Number));
 }
 
-
-void testEmpty1()
+void testTrue()
 {
-	const auto* src = "";
-	auto token = Token::parse(src);
-	
-	assert(token);
-	assert(token->type() == TokenType::EndOfFile);
-	assert(token->text() == "");
-	assert(token->src() == src);
-	assert(token->length() == 0);
-	assert(token->index() == strlen(src));
+	assert(confirmStandaloneToken("true", TokenType::True));
+}
 
-	confirmEndOfFile(*token);
+void testFalse()
+{
+	assert(confirmStandaloneToken("false", TokenType::False));
+}
+
+void testNull()
+{
+	assert(confirmStandaloneToken("null", TokenType::Null));
+}
+
+void testEmpty()
+{
+	assert(confirmStandaloneToken("", TokenType::EndOfFile));
+}
+
+void testColon()
+{
+	assert(confirmStandaloneToken(":", TokenType::Colon));
+}
+
+void testComma()
+{
+	assert(confirmStandaloneToken(",", TokenType::Comma));
+}
+
+void testLeftBracket()
+{
+	assert(confirmStandaloneToken("[", TokenType::LeftBracket));
+}
+
+void testRightBracket()
+{
+	assert(confirmStandaloneToken("]", TokenType::RightBracket));
+}
+
+void testLeftBrace()
+{
+	assert(confirmStandaloneToken("{", TokenType::LeftBrace));
+}
+
+void testRightBrace()
+{
+	assert(confirmStandaloneToken("}", TokenType::RightBrace));
 }
 
 int main()
 {
-	testString1();
-	testNumber1();
-	testTrue1();
-	testFalse1();
-	testNull1();
-	testEmpty1();
+	testString();
+	testNumber();
+	testTrue();
+	testFalse();
+	testNull();
+	testEmpty();
+	testColon();
+	testComma();
+	testLeftBracket();
+	testRightBracket();
+	testLeftBrace();
+	testRightBrace();
 
 	return 0;
 }
