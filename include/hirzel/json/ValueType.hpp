@@ -16,6 +16,7 @@ namespace hirzel::json
 	};
 	
 	const char *valueTypeName(ValueType valueType);
+	
 	std::ostream& operator<<(std::ostream& out, ValueType valueType);
 }
 

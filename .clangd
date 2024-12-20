@@ -1,6 +1,6 @@
 CompileFlags:
 	Add: [ -std=c++17 ]
-	CompilationDatabase: builddir
+	CompilationDatabase: build
 
 InlayHints:
 	Enabled: No

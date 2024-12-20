@@ -11,10 +11,10 @@ common_sources = [
 ]
 
 unit_test_sources = [
-	'src/hirzel/json/Token.test.cpp',
-	'src/hirzel/json/TokenType.test.cpp',
-	'src/hirzel/json/Value.test.cpp',
-	'src/hirzel/json/ValueType.test.cpp'
+	'test/hirzel/json/Token.test.cpp',
+	'test/hirzel/json/TokenType.test.cpp',
+	'test/hirzel/json/Value.test.cpp',
+	'test/hirzel/json/ValueType.test.cpp'
 ]
 
 fs = import('fs')
