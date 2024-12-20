@@ -34,7 +34,7 @@ namespace hirzel::json
 		Token& operator=(const Token&) = default;
 
 		static std::optional<Token> parse(const char* src);
-		std::optional<Token> parseNext();
+		std::optional<Token> parseNext() const;
 
 		std::string text() const;
 

@@ -105,7 +105,7 @@ namespace hirzel::json
 		switch (c)
 		{
 			case '\0':
-				return Token(src, index, 1, TokenType::EndOfFile);
+				return Token(src, index, 0, TokenType::EndOfFile);
 
 			case '{':
 				return Token(src, index, 1, TokenType::LeftBrace);
@@ -323,7 +323,7 @@ namespace hirzel::json
 		return token;
 	}
 
-	std::optional<Token> Token::parseNext()
+	std::optional<Token> Token::parseNext() const
 	{
 		auto index = getNextTokenIndex(_src, _index + _length);
 		auto token = parse(_src, index);
