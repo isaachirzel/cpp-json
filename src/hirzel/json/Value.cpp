@@ -378,6 +378,12 @@ namespace hirzel::json
 		case ValueType::String:
 			return !_string->empty();
 
+		case ValueType::Array:
+			return true;
+
+		case ValueType::Object:
+			return true;
+
 		default:
 			return false;
 		}
