@@ -7,6 +7,14 @@
 
 namespace hirzel::json
 {
+	std::optional<Value> deserializeValue(Token& token);
+	std::optional<Value> deserializeObject(Token& token);
+	std::optional<Value> deserializeArray(Token& token);
+	std::optional<Value> deserializeString(Token& token);
+	std::optional<Value> deserializeNumber(Token& token);
+	std::optional<Value> deserializeBoolean(Token& token);
+	std::optional<Value> deserializeNull(Token& token);
+
 	static bool incrementToken(Token& token)
 	{
 		auto nextToken = token.parseNext();
@@ -246,14 +254,26 @@ namespace hirzel::json
 
 	std::optional<Value> deserializeBoolean(Token& token)
 	{
-		if (token.type() == TokenType::True)
-			return true;
+		bool value;
 
-		if (token.type() == TokenType::False)
-			return false;
+		switch (token.type())
+		{
+			case TokenType::True:
+				value = true;
+				break;
 
-		expectedError(token, "boolean");
-		return {};
+			case TokenType::False:
+				value = false;
+				break;
+
+			default:
+				expectedError(token, "boolean");
+				return {};
+		}
+
+		incrementToken(token);
+
+		return value;
 	}
 
 	std::optional<Value> deserializeNull(Token& token)
@@ -263,6 +283,8 @@ namespace hirzel::json
 			expectedError(token, "null");
 			return {};
 		}
+
+		incrementToken(token);
 
 		return Value();
 	}

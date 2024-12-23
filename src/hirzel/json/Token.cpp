@@ -79,16 +79,16 @@ namespace hirzel::json
 			{
 				switch (src[i + 1])
 				{
-				case '/':
-					i = getEndOfLineCommentIndex(src, i + 2) - 1;
-					continue;
+					case '/':
+						i = getEndOfLineCommentIndex(src, i + 2) - 1;
+						continue;
 
-				case '*':
-					i = getEndOfBlockCommentIndex(src, i + 2) - 1;
-					continue;
+					case '*':
+						i = getEndOfBlockCommentIndex(src, i + 2) - 1;
+						continue;
 
-				default:
-					break;
+					default:
+						break;
 				}
 			}
 
