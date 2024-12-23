@@ -14,7 +14,9 @@ unit_test_sources = [
 	'test/hirzel/json/Token.test.cpp',
 	'test/hirzel/json/TokenType.test.cpp',
 	'test/hirzel/json/Value.test.cpp',
-	'test/hirzel/json/ValueType.test.cpp'
+	'test/hirzel/json/ValueType.test.cpp',
+	'test/hirzel/json/Serialization.test.cpp',
+	'test/hirzel/json/Deserialization.test.cpp'
 ]
 
 fs = import('fs')

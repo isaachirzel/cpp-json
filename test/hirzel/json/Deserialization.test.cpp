@@ -4,7 +4,5 @@
 
 int main()
 {
-	assert();
-
 	return 0;
 }

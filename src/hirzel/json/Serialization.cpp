@@ -5,42 +5,34 @@
 
 namespace hirzel::json
 {
-	static void serializationError(const Value& value, ValueType expectedType)
-	{
-		if (!hasErrorCallback())
-			return;
-
-		auto message = std::string();
-
-		message += "Unable to serialize ";
-		message += valueTypeName(value.type());
-		message += " '' as ";
-		message += valueTypeName(expectedType);
-
-		pushError(message);
-	}
+	std::string serializeNull(const Value& value);
+	std::string serializeNumber(const Value& value);
+	std::string serializeBoolean(const Value& value);
+	std::string serializeString(const Value& value);
+	std::string serializeArray(const Value& value);
+	std::string serializeObject(const Value& value);
 
 	std::string serialize(const Value& value)
 	{
 		switch (value.type())
 		{
 			case ValueType::Null:
-				return *serializeNull(value);
+				return serializeNull(value);
 
 			case ValueType::Number:
-				return *serializeNumber(value);
+				return serializeNumber(value);
 
 			case ValueType::Boolean:
-				return *serializeBoolean(value);
+				return serializeBoolean(value);
 
 			case ValueType::String:
-				return *serializeString(value);
+				return serializeString(value);
 
 			case ValueType::Array:
-				return *serializeArray(value);
+				return serializeArray(value);
 
 			case ValueType::Object:
-				return *serializeObject(value);
+				return serializeObject(value);
 			
 			default:
 				break;
@@ -49,13 +41,9 @@ namespace hirzel::json
 		return "";
 	}
 
-	std::optional<std::string> serializeObject(const Value& value)
+	std::string serializeObject(const Value& value)
 	{
-		if (!value.isObject())
-		{
-			serializationError(value, ValueType::Object);
-			return {};
-		}
+		assert(value.isObject());
 
 		const auto& object = value.object();
 
@@ -90,13 +78,9 @@ namespace hirzel::json
 		return text;
 	}
 
-	std::optional<std::string> serializeArray(const Value& value)
+	std::string serializeArray(const Value& value)
 	{
-		if (!value.isArray())
-		{
-			serializationError(value, ValueType::Array);
-			return {};
-		}
+		assert(value.isArray());
 
 		const auto& array = value.array();
 		auto text = std::string();
@@ -121,14 +105,10 @@ namespace hirzel::json
 		return text;
 	}
 
-	std::optional<std::string> serializeString(const Value& value)
+	std::string serializeString(const Value& value)
 	{
-		if (!value.isString())
-		{
-			serializationError(value, ValueType::String);
-			return {};
-		}
-
+		assert(value.isString());
+		
 		// TODO: Escaping text
 		auto text = std::string();
 		auto valueText = value.string();
@@ -142,13 +122,9 @@ namespace hirzel::json
 		return text;
 	}
 
-	std::optional<std::string> serializeNumber(const Value& value)
+	std::string serializeNumber(const Value& value)
 	{
-		if (!value.isNumber())
-		{
-			serializationError(value, ValueType::Number);
-			return {};
-		}
+		assert(value.isNumber());
 
 		auto number = value.number();
 		auto text = std::to_string(number);
@@ -156,14 +132,10 @@ namespace hirzel::json
 		return text;
 	}
 
-	std::optional<std::string> serializeBoolean(const Value& value)
+	std::string serializeBoolean(const Value& value)
 	{
-		if (!value.isBoolean())
-		{
-			serializationError(value, ValueType::Boolean);
-			return {};
-		}
-
+		assert(value.isBoolean());
+		
 		const auto* text = value.boolean()
 			? "true"
 			: "false";
@@ -171,13 +143,9 @@ namespace hirzel::json
 		return text;
 	}
 
-	std::optional<std::string> serializeNull(const Value& value)
+	std::string serializeNull(const Value& value)
 	{
-		if (!value.isNull())
-		{
-			serializationError(value, ValueType::Null);
-			return {};
-		}
+		assert(value.isNull());
 
 		return "null";
 	}
